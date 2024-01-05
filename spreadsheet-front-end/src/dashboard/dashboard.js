@@ -45,8 +45,15 @@ function Dashboard() {
   const [colinfo, setColinfo] = useState([]);
   const [openAddColumnForm, setOpenAddColumnForm] = useState(false);
   const [openUpdateCellForm, setOpenUpdateCellForm] = useState(false);
-  const [selectedCell, setSelectedCell] = useState({ id :null ,rowIndex: null, columnIndex: null ,value: null ,cellInfo:{} });
+  const [selectedCell, setSelectedCell] = useState({
+    id: null,
+    rowIndex: null,
+    columnIndex: null,
+    value: null,
+    cellInfo: {},
+  });
 
+  const [summaryData, setSummaryData] = useState([]); //for calculating summary
 
   useEffect(() => {
     axios
@@ -57,10 +64,40 @@ function Dashboard() {
     axios
       .get("http://localhost:5000/spreadsheet/fetchAllColumnInfo")
       .then((response) => {
-      setColinfo(response.data);
-      console.log(response.data)
-    });
+        setColinfo(response.data);
+        // console.log(response.data)
+
+        calculateSummaryData(data, colinfo);
+      });
   }, []);
+
+  //calculate summary data
+
+  const calculateSummaryData = (data, colinfo) => {
+    colinfo.forEach((column) => {
+      const { coltitle, coldatatype } = column;
+      // Now you can use coltitle and coldatatype as variables
+      console.log(
+        `Column Title: ${coltitle}, Column Data Type: ${coldatatype}`
+      );
+
+      let numericSum = 0;
+      console.log("column title :" + coltitle);
+
+      data.forEach((item) => {
+        if (coldatatype === "number" && item[coltitle] !== undefined) {
+          console.log("column price : "+ item[coltitle]);
+        
+          if (!isNaN(item[coltitle]))
+           numericSum += parseInt(item[coltitle]);
+        }
+      });
+      const summaryObject = { coltitle: numericSum };
+      console.log("total : " + numericSum);
+      summaryData.push(summaryObject);
+      //console.log(summaryObject);
+    }); // outer colInfo loop ends
+  };
 
   const addNewRow = () => {
     axios.post("http://localhost:5000/spreadsheet/addEmptyRow").then(() => {
@@ -70,11 +107,11 @@ function Dashboard() {
           setData(response.data);
         });
       axios
-      .get("http://localhost:5000/spreadsheet/fetchAllColumnInfo")
-      .then((response) => {
-      setColinfo(response.data);
-      console.log(response.data)
-    });
+        .get("http://localhost:5000/spreadsheet/fetchAllColumnInfo")
+        .then((response) => {
+          setColinfo(response.data);
+          console.log(response.data);
+        });
     });
   };
 
@@ -96,65 +133,80 @@ function Dashboard() {
         axios
           .get("http://localhost:5000/spreadsheet/fetchAllColumnInfo")
           .then((response) => {
-          setColinfo(response.data);
-          console.log(response.data)
-        });
+            setColinfo(response.data);
+            console.log(response.data);
+          });
       })
       .catch((error) => {
         console.error("Error adding column:", error);
       });
   };
 
-  const handleCellDoubleClick = (rowIndex, columnIndex, id ,value ) => {
+  const handleCellDoubleClick = (rowIndex, columnIndex, id, value) => {
     console.log(columnIndex);
-    const cellInfo = colinfo.find((cell)=>{return cell.coltitle.toLowerCase()===columnIndex});
-    console.log(cellInfo)
-    console.log(value)
-    if(cellInfo.coldatatype === "date" ) value=dayjs(value);
-    if(cellInfo.coldatatype === "multiSelect" && value ===null) value=[]
-    setSelectedCell({ id,rowIndex, columnIndex ,value,cellInfo});
+    const cellInfo = colinfo.find((cell) => {
+      return cell.coltitle.toLowerCase() === columnIndex;
+    });
+    console.log(cellInfo);
+    console.log(value);
+    if (cellInfo.coldatatype === "date") value = dayjs(value);
+    if (cellInfo.coldatatype === "multiSelect" && value === null) value = [];
+    setSelectedCell({ id, rowIndex, columnIndex, value, cellInfo });
     setOpenUpdateCellForm(true);
-    
   };
 
-  const handleUpdateCellQuery =(id,colName,newVal)=>{
-    console.log(id,colName,newVal)
+  const handleUpdateCellQuery = (id, colName, newVal) => {
+    console.log(id, colName, newVal);
     axios
-          .put("http://localhost:5000/spreadsheet/updateSpreadsheetData",{id,columnName:colName,value:newVal})
-          .then(() => {
-            axios
-              .get("http://localhost:5000/spreadsheet/fetchSpreadsheetData")
-              .then((response) => {
-                setData(response.data);
-                setOpenAddColumnForm(false);
-              });
-            axios
-              .get("http://localhost:5000/spreadsheet/fetchAllColumnInfo")
-              .then((response) => {
-              setColinfo(response.data);
-              console.log(response.data)
-            });
-          })
-          .catch((error) => {
-            console.error("Error adding column:", error);
+      .put("http://localhost:5000/spreadsheet/updateSpreadsheetData", {
+        id,
+        columnName: colName,
+        value: newVal,
+      })
+      .then(() => {
+        axios
+          .get("http://localhost:5000/spreadsheet/fetchSpreadsheetData")
+          .then((response) => {
+            setData(response.data);
+            setOpenAddColumnForm(false);
           });
-  }
+        axios
+          .get("http://localhost:5000/spreadsheet/fetchAllColumnInfo")
+          .then((response) => {
+            setColinfo(response.data);
+            console.log(response.data);
+          });
+      })
+      .catch((error) => {
+        console.error("Error adding column:", error);
+      });
+  };
   return (
     <div className="Dashboard">
       <div className="centered-dashboard">
-        {selectedCell.rowIndex!==null &&<UpdateCellForm
-          open={openUpdateCellForm}
-          onClose={() => {
-            setOpenUpdateCellForm(false);
-            setSelectedCell({id:null, rowIndex: null, columnIndex: null ,value: null ,cellInfo:{} })
-          }}
-          onUpdateCell={handleUpdateCellQuery}
-          rowId={selectedCell.id}
-          columnName={selectedCell.columnIndex}
-          cellValue={selectedCell.value}
-          columnType={selectedCell.cellInfo.coldatatype}
-          options={selectedCell.cellInfo.options.options}
-        ></UpdateCellForm>}
+        {/* update cell : user enters/updates data */}
+        {selectedCell.rowIndex !== null && (
+          <UpdateCellForm
+            open={openUpdateCellForm}
+            onClose={() => {
+              setOpenUpdateCellForm(false);
+              setSelectedCell({
+                id: null,
+                rowIndex: null,
+                columnIndex: null,
+                value: null,
+                cellInfo: {},
+              });
+            }}
+            onUpdateCell={handleUpdateCellQuery}
+            rowId={selectedCell.id}
+            columnName={selectedCell.columnIndex}
+            cellValue={selectedCell.value}
+            columnType={selectedCell.cellInfo.coldatatype}
+            options={selectedCell.cellInfo.options.options}
+          ></UpdateCellForm>
+        )}
+        {/* add new column with user input */}
         <AddColumnForm
           open={openAddColumnForm}
           onClose={() => {
@@ -189,6 +241,9 @@ function Dashboard() {
                   </Button>
                 </StyledTableCell>
               </TableRow>
+              <TableRow>
+                <StyledTableCell> Summary: </StyledTableCell>
+              </TableRow>
             </TableHead>
             <TableBody>
               {data.map((row, rowIndex) => (
@@ -198,10 +253,20 @@ function Dashboard() {
                     (cell, cellIndex) =>
                       cell !== "id" &&
                       cell !== "isdeleted" && (
-                        <StyledTableCell key={cellIndex}
-                        onDoubleClick={() => handleCellDoubleClick(rowIndex, cell ,row["id"] ,row[cell])}
+                        <StyledTableCell
+                          key={cellIndex}
+                          onDoubleClick={() =>
+                            handleCellDoubleClick(
+                              rowIndex,
+                              cell,
+                              row["id"],
+                              row[cell]
+                            )
+                          }
                         >
-                          {Array.isArray(row[cell]) ? row[cell].map((item)=><>{item} </>) : row[cell]}
+                          {Array.isArray(row[cell])
+                            ? row[cell].map((item) => <>{item} </>)
+                            : row[cell]}
                         </StyledTableCell>
                       )
                   )}

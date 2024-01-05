@@ -91,9 +91,12 @@ export const addEmptyRow = async () => {
 //fetch whole spreadsheet
 export const fetchSpreadsheetData = async () => {
   try {
-    const result = await sequelize.query(`SELECT * FROM spreadsheet ORDER BY id ASC;`, {
-      type: sequelize.QueryTypes.SELECT,
-    });
+    const result = await sequelize.query(
+      `SELECT * FROM spreadsheet ORDER BY id ASC;`,
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
 
     console.log("Fetched all data from the spreadsheet table.");
     return result;
@@ -121,26 +124,23 @@ export const fetchAllColumnInfo = async () => {
 //update cell value
 export const updateSpreadsheetData = async (id, columnName, value) => {
   try {
-
     if (Array.isArray(value)) {
-        const result = await sequelize.query(
-            `UPDATE spreadsheet SET ${columnName} = ARRAY[:value] WHERE id = :id;`,
-            {
-              replacements: { id, value },
-              type: sequelize.QueryTypes.UPDATE,
-            }
-          );
-      } else {
-        const result = await sequelize.query(
-            `UPDATE spreadsheet SET ${columnName} = :value WHERE id = :id;`,
-            {
-              replacements: { id, value },
-              type: sequelize.QueryTypes.UPDATE,
-            }
-          );
-      }
-
-  
+      const result = await sequelize.query(
+        `UPDATE spreadsheet SET ${columnName} = ARRAY[:value] WHERE id = :id;`,
+        {
+          replacements: { id, value },
+          type: sequelize.QueryTypes.UPDATE,
+        }
+      );
+    } else {
+      const result = await sequelize.query(
+        `UPDATE spreadsheet SET ${columnName} = :value WHERE id = :id;`,
+        {
+          replacements: { id, value },
+          type: sequelize.QueryTypes.UPDATE,
+        }
+      );
+    }
 
     console.log(`Updated ${columnName} for id ${id} in the spreadsheet table.`);
     return result;

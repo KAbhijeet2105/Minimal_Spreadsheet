@@ -13,6 +13,7 @@ import DialogActions from "@mui/material/DialogActions";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from 'dayjs';
 
 const UpdateCellForm = ({
   open = false,
@@ -21,7 +22,7 @@ const UpdateCellForm = ({
   rowId = "",
   columnName = "",
   cellValue = "",
-  columnType = "date", // Default to text type
+  columnType = "date",
   options = [],
 }) => {
   const [newValue, setNewValue] = useState(cellValue);
@@ -89,13 +90,7 @@ const UpdateCellForm = ({
             </FormControl>
           )}
           {columnType === "date" && (
-            // <DatePicker
-            //   label="Select Date"
-            //   value={selectedDate}
-            //   onChange={(date) => handleDateChange(date)}
-            //   renderInput={(params) => <TextField {...params} />}
-            //   adapter={AdapterDateFns}
-            // />
+         
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 label="Select Date"
