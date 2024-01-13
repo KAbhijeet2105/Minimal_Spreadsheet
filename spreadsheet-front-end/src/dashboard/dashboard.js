@@ -53,7 +53,7 @@ function Dashboard() {
     cellInfo: {},
   });
 
-  const [summaryData, setSummaryData] = useState([]); //for calculating summary
+ 
 
   useEffect(() => {
     axios
@@ -65,39 +65,8 @@ function Dashboard() {
       .get("http://localhost:5000/spreadsheet/fetchAllColumnInfo")
       .then((response) => {
         setColinfo(response.data);
-        // console.log(response.data)
-
-        calculateSummaryData(data, colinfo);
       });
   }, []);
-
-  //calculate summary data
-
-  const calculateSummaryData = (data, colinfo) => {
-    colinfo.forEach((column) => {
-      const { coltitle, coldatatype } = column;
-      // Now you can use coltitle and coldatatype as variables
-      console.log(
-        `Column Title: ${coltitle}, Column Data Type: ${coldatatype}`
-      );
-
-      let numericSum = 0;
-      console.log("column title :" + coltitle);
-
-      data.forEach((item) => {
-        if (coldatatype === "number" && item[coltitle] !== undefined) {
-          console.log("column price : "+ item[coltitle]);
-        
-          if (!isNaN(item[coltitle]))
-           numericSum += parseInt(item[coltitle]);
-        }
-      });
-      const summaryObject = { coltitle: numericSum };
-      console.log("total : " + numericSum);
-      summaryData.push(summaryObject);
-      //console.log(summaryObject);
-    }); // outer colInfo loop ends
-  };
 
   const addNewRow = () => {
     axios.post("http://localhost:5000/spreadsheet/addEmptyRow").then(() => {
@@ -123,7 +92,6 @@ function Dashboard() {
     axios
       .post("http://localhost:5000/spreadsheet/createColumn", columnData)
       .then(() => {
-        // After successfully adding the column, fetch the updated data
         axios
           .get("http://localhost:5000/spreadsheet/fetchSpreadsheetData")
           .then((response) => {
@@ -155,12 +123,13 @@ function Dashboard() {
     setOpenUpdateCellForm(true);
   };
 
-  const handleUpdateCellQuery = (id, colName, newVal) => {
+  const handleUpdateCellQuery = (id, colName, colType, newVal) => {
     console.log(id, colName, newVal);
     axios
       .put("http://localhost:5000/spreadsheet/updateSpreadsheetData", {
         id,
         columnName: colName,
+        colType:colType,
         value: newVal,
       })
       .then(() => {
@@ -243,6 +212,12 @@ function Dashboard() {
               </TableRow>
               <TableRow>
                 <StyledTableCell> Summary: </StyledTableCell>
+                {colinfo.map(
+                  (col) =>
+                    (
+                       <StyledTableCell key={col.id}>{col.coldatatype==='date' ? col.datesummary : col.coldatatype==='number' ? col.numbersummary : col.selectsummary?.map((op)=>(<>{op} </>))}</StyledTableCell>
+                    )
+                )}
               </TableRow>
             </TableHead>
             <TableBody>

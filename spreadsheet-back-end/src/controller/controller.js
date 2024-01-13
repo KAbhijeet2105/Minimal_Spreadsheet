@@ -38,13 +38,13 @@ router.get("/fetchAllColumnInfo", async (req, res) => {
 });
 
 router.put("/updateSpreadsheetData", async (req, res) => {
-  const { id, columnName, value } = req.body;
+  const { id, columnName, colType, value } = req.body;
 
-  if (!id || !columnName || !value) {
+  if (!id || !columnName || !value || !colType) {
     return res.status(400).json({ error: "Invalid request parameters." });
   }
 
-  await updateSpreadsheetData(id, columnName, value);
+  await updateSpreadsheetData(id, columnName, colType, value);
 
   res.status(200).json({ message: "Spreadsheet data updated successfully." });
 });

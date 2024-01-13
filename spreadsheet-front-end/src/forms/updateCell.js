@@ -12,7 +12,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import dayjs from 'dayjs';
 
 const UpdateCellForm = ({
@@ -22,21 +22,20 @@ const UpdateCellForm = ({
   rowId = "",
   columnName = "",
   cellValue = "",
-  columnType = "date",
+  columnType = "",
   options = [],
 }) => {
   const [newValue, setNewValue] = useState(cellValue);
   const [selectedDate, handleDateChange] = useState("");
 
   useEffect(() => {
-    // Reset the new value when the form opens
     setNewValue(cellValue);
   }, [cellValue, open]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(rowId)
-    onUpdateCell(rowId,columnName,newValue);
+    onUpdateCell(rowId,columnName,columnType,newValue);
     onClose();
   };
 
@@ -90,13 +89,15 @@ const UpdateCellForm = ({
             </FormControl>
           )}
           {columnType === "date" && (
-         
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Select Date"
-                value={newValue}
-                onChange={(date) => setNewValue(date?.toString())}
             
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker
+                label="Select Date and time"
+                value={newValue}
+                onChange={(date) => {  
+                  console.log('Original Date:', date);
+                  setNewValue(date?.$d.toLocaleString());
+                }}
               />
             </LocalizationProvider>
           )}
