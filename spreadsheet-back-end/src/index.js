@@ -1,7 +1,7 @@
 import express, { json } from "express";
 import cors from "cors";
 import sequelize from "./config/dbconfig.js";
-import { createColumnTable, createTable } from "./config/dbqueries.js";
+import { createColumnTable, createSpreadSheetTable } from "./config/dbqueries.js";
 import controllerRoute from "./controller/controller.js";
 
 const app = express();
@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 5000;
     console.log(
       "Connection to the database has been established successfully."
     );
-    await createTable("Spreadsheet");
+    await createSpreadSheetTable();
     await createColumnTable();
   } catch (error) {
     console.error("Unable to connect to the database:", error);
