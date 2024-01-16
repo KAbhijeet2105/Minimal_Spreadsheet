@@ -14,6 +14,7 @@ import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
 import AddColumnForm from "../forms/addColumn.js";
 import UpdateCellForm from "../forms/updateCell.js";
+import Popup from '../forms/Popup';
 import dayjs from "dayjs";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -45,6 +46,9 @@ function Dashboard() {
   const [colinfo, setColinfo] = useState([]);
   const [openAddColumnForm, setOpenAddColumnForm] = useState(false);
   const [openUpdateCellForm, setOpenUpdateCellForm] = useState(false);
+  const [isPopupOpen, setPopupOpen] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+
   const [selectedCell, setSelectedCell] = useState({
     id: null,
     rowIndex: null,
@@ -53,7 +57,14 @@ function Dashboard() {
     cellInfo: {},
   });
 
- 
+  const openPopup = (message) => {
+    setPopupMessage(message);
+    setPopupOpen(true);
+  };
+
+  const closePopup = () => {
+    setPopupOpen(false);
+  };
 
   useEffect(() => {
     axios
@@ -84,14 +95,20 @@ function Dashboard() {
     });
   };
 
-  const addColumn = () => {
-    console.log("Add Column logic");
-  };
+  // const addColumn = () => {
+  //   console.log("Add Column logic");
+  // };
 
   const handleAddColumn = (columnData) => {
     axios
       .post("http://localhost:5000/spreadsheet/createColumn", columnData)
-      .then(() => {
+      .then((resp) => {
+
+          if(resp.data.error){
+            setPopupOpen(true);
+            setPopupMessage(resp.data.error);
+          }
+
         axios
           .get("http://localhost:5000/spreadsheet/fetchSpreadsheetData")
           .then((response) => {
@@ -183,6 +200,10 @@ function Dashboard() {
           }}
           onAddColumn={handleAddColumn}
         ></AddColumnForm>
+
+        <Popup isOpen={isPopupOpen} message={popupMessage} onRequestClose={closePopup} />
+
+
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 700 }} aria-label="customized table">
             <TableHead>

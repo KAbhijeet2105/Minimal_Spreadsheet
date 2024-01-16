@@ -12,9 +12,15 @@ const router = express.Router();
 router.post("/createColumn", async (req, res) => {
   const colInfo = req.body;
   console.log(colInfo);
-  await addColumn(colInfo);
+ 
+  try {
+    const resp = await addColumn(colInfo);
+    return res.json(resp);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
 
-  res.status(200).send("OK");
+
 });
 
 //add empty row in spreadsheet

@@ -63,12 +63,12 @@ export const createColumnTable = async () => {
 
     let currentColumnCount = await countActiveColumns();
 
-    if (currentColumnCount == 0) {
-      for (let i = 1; i <= 50; i++) {
-        //  await sequelize.query(`INSERT INTO ColumnInfo DEFAULT VALUES;`);
-      }
-      console.log("columnInfo table default columns inserted .");
-    }
+    // if (currentColumnCount == 0) {
+    //   for (let i = 1; i <= 50; i++) {
+    //     //  await sequelize.query(`INSERT INTO ColumnInfo DEFAULT VALUES;`);
+    //   }
+    //   console.log("columnInfo table default columns inserted .");
+    // }
   } catch (error) {
     console.error("Error creating Column Info Table:", error);
   } finally {
@@ -82,6 +82,13 @@ export const addColumn = async (colInfo) => {
     const colType = colInfo.colType;
     const colOptions = colInfo.colOptions;
 
+    if (!colTitle || !colType) {
+      console.log("error : coumn null error!");
+      throw new Error(
+        "Please choose a unique column Name and valid data type!"
+      );
+    }
+
     let colSpreadsheetType;
 
     if (
@@ -94,6 +101,8 @@ export const addColumn = async (colInfo) => {
       colSpreadsheetType = "text[]";
     } else if (colType === "number" || colType === "decimal") {
       colSpreadsheetType = "decimal";
+    } else {
+      throw new Error("Please choose a valid data type!");
     }
 
     // here  inserting new column info first we will check column count is less than 50 and then will insert column data accordingly
@@ -140,8 +149,11 @@ export const addColumn = async (colInfo) => {
     }
   } catch (error) {
     console.error("Unable to add column :", error);
+    throw new Error("Please choose a unique column Name and valid data type!");
   } finally {
   }
+
+  return { message: "Request processed successfully." };
 };
 
 // get active column count of columnInfo table
